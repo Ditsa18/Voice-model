@@ -1,0 +1,54 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "abp-voice"
+version = "0.1.0"
+description = "Multilingual voice-RAG agent (English / Hindi / Bengali) on local Ollama + Gemma."
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "ABP" }]
+dependencies = [
+    "ollama>=0.4.0",
+    "chromadb>=0.5.0",
+    "sentence-transformers>=3.0.0",
+    "faster-whisper>=1.0.3",
+    "sounddevice>=0.4.6",
+    "soundfile>=0.12.1",
+    "numpy>=1.24",
+    "scipy>=1.11",
+    "edge-tts>=6.1.12",
+    "gTTS>=2.5.1",
+    "langdetect>=1.0.9",
+    "pypdf>=4.0.0",
+    "python-docx>=1.1.0",
+    "rich>=13.7.0",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.2",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0", "ruff>=0.5.0"]
+
+[project.scripts]
+abp-chat   = "abp_voice.cli.chat:main"
+abp-ingest = "abp_voice.cli.ingest:main"
+abp-test   = "abp_voice.cli.test_call:main"
+abp-mic    = "abp_voice.cli.mic_check:main"
+
+[tool.setuptools.packages.find]
+include = ["abp_voice*"]
+exclude = ["tests*", "data*", "chroma_db*", "audio_cache*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "W"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

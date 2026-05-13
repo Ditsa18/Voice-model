@@ -1,0 +1,35 @@
+# Virtualenvs
+.venv/
+venv/
+env/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.eggs/
+*.egg-info/
+build/
+dist/
+
+# Runtime state
+chroma_db/
+audio_cache/
+*.mp3
+*.wav
+
+# Secrets / local config
+.env
+
+# IDE
+.vscode/
+.idea/
+
+# Caches
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# OS
+.DS_Store
+Thumbs.db
