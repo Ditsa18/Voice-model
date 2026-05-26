@@ -28,30 +28,43 @@ class VectorStore:
 
     def __init__(self) -> None:
         s = get_settings()
+
         self._client = chromadb.PersistentClient(
             path=str(s.chroma_dir),
-            settings=ChromaSettings(anonymized_telemetry=False),
+            settings=ChromaSettings(
+                anonymized_telemetry=False
+            ),
         )
+
         self._collection_name = s.collection_name
+
         self._collection: Collection | None = None
 
     def _coll(self) -> Collection:
+
         if self._collection is None:
             self._collection = self._client.get_or_create_collection(
                 name=self._collection_name,
                 metadata={"hnsw:space": "cosine"},
             )
+
         return self._collection
 
     def count(self) -> int:
         return self._coll().count()
 
     def reset(self) -> None:
+
         try:
-            self._client.delete_collection(self._collection_name)
+            self._client.delete_collection(
+                self._collection_name
+            )
+
         except Exception:
             pass
+
         self._collection = None
+
         self._coll()
 
     def upsert(
@@ -61,6 +74,7 @@ class VectorStore:
         metadatas: list[dict[str, Any]],
         embeddings: list[list[float]],
     ) -> None:
+
         self._coll().upsert(
             ids=ids,
             documents=documents,
@@ -68,12 +82,41 @@ class VectorStore:
             embeddings=embeddings,
         )
 
-    def query(self, query_embedding: list[float], k: int) -> list[Retrieved]:
-        res = self._coll().query(query_embeddings=[query_embedding], n_results=k)
+    def query(
+        self,
+        query_embedding: list[float],
+        k: int,
+        lang: str | None = None,
+    ) -> list[Retrieved]:
+
+        where = None
+
+        if lang:
+            where = {
+                "lang": lang
+            }
+
+        res = self._coll().query(
+            query_embeddings=[query_embedding],
+            n_results=k,
+            where=where,
+        )
+
         docs = res.get("documents", [[]])[0]
+
         metas = res.get("metadatas", [[]])[0]
+
         dists = res.get("distances", [[]])[0]
+
         return [
-            Retrieved(text=d, metadata=m or {}, distance=dist)
-            for d, m, dist in zip(docs, metas, dists)
+            Retrieved(
+                text=d,
+                metadata=m or {},
+                distance=dist
+            )
+            for d, m, dist in zip(
+                docs,
+                metas,
+                dists
+            )
         ]

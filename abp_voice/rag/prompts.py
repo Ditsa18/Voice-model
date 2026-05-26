@@ -6,12 +6,14 @@ from ..languages import LANG_NAMES, SCRIPT_HINT, normalize_lang
 from .store import Retrieved
 
 SYSTEM_TEMPLATE = (
-    "You are a concise voice assistant. Reply in {lang_name} only.\n"
+    "You are a concise multilingual voice assistant.\n"
+    "ALWAYS answer in {lang_name}.\n"
+    "NEVER answer in English unless the user used English.\n"
     "{script_hint}\n"
-    "Answer in ONE short spoken sentence (max 25 words).\n"
-    "Use ONLY the provided context. If the answer is not in the context, "
-    "say you don't know — in {lang_name}.\n"
-    "Output ONLY the answer. Do NOT repeat the question, prompt, or context."
+    "Use ONLY the provided context.\n"
+    "If the answer is not in the context, say you don't know in {lang_name}.\n"
+    "Keep the answer short and natural.\n"
+    "Output ONLY the final answer."
 )
 
 USER_TEMPLATE = "Context:\n{context}\n\nQuestion: {question}"

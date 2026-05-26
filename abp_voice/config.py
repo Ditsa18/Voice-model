@@ -33,9 +33,9 @@ class Settings(BaseSettings):
 
     # ── LLM (Ollama) ──────────────────────────────────────────────────────
     ollama_host: str = "http://localhost:11434"
-    llm_model: str = "gemma3:1b"
-    llm_num_ctx: int = 2048
-    llm_num_predict: int = 160
+    llm_model: str = "qwen2.5:1.5b"
+    llm_num_ctx: int = 1024
+    llm_num_predict: int = 80
     llm_temperature: float = 0.2
     llm_keep_alive: str = "30m"
 
@@ -44,12 +44,12 @@ class Settings(BaseSettings):
         "sentence-transformers/paraphrase-multilingual-mpnet-base-v2"
     )
     collection_name: str = "abp_multilingual"
-    chunk_size: int = 700
-    chunk_overlap: int = 120
-    top_k: int = 3
+    chunk_size: int = 300
+    chunk_overlap: int = 40
+    top_k: int = 2
 
     # ── STT (faster-whisper) ──────────────────────────────────────────────
-    whisper_model: str = "medium"
+    whisper_model: str = "small"
     whisper_device: str = "cpu"
     whisper_compute: str = "int8"
     whisper_use_vad: bool = False

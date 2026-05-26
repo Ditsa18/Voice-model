@@ -1,4 +1,4 @@
-"""End-to-end RAG: retrieval → generation. The orchestration layer for the voice agent."""
+"""End-to-end RAG: retrieval → generation."""
 
 from __future__ import annotations
 
@@ -27,7 +27,7 @@ class RAGResult:
 
 
 class RAGPipeline:
-    """Compose embeddings + vector store + LLM into a single .generate() call."""
+    """Compose embeddings + vector store + LLM."""
 
     def __init__(
         self,
@@ -35,25 +35,90 @@ class RAGPipeline:
         embeddings: EmbeddingModel | None = None,
         llm: OllamaLLM | None = None,
     ) -> None:
+
         self.store = store or VectorStore()
+
         self.embeddings = embeddings or EmbeddingModel()
+
         self.llm = llm or OllamaLLM()
+
         self._top_k = get_settings().top_k
 
-    # ── high-level ────────────────────────────────────────────────────────
+    # Warmup
     def warmup(self) -> None:
+
         self.embeddings.warmup()
-        self.store.count()  # forces collection init
+
+        self.store.count()
+
         self.llm.warmup()
 
-    def retrieve(self, query: str, k: int | None = None) -> list[Retrieved]:
-        vec = self.embeddings.encode([query])[0]
-        return self.store.query(vec, k or self._top_k)
+    # Retrieval
+    def retrieve(
+        self,
+        query: str,
+        lang: str,
+        k: int | None = None
+    ) -> list[Retrieved]:
 
-    def generate(self, question: str, lang: str) -> RAGResult:
+        vec = self.embeddings.encode([query])[0]
+
+        return self.store.query(
+            vec,
+            k or self._top_k,
+            lang=lang
+        )
+
+    # Full generation
+    def generate(
+        self,
+        question: str,
+        lang: str
+    ) -> RAGResult:
+
         lang = normalize_lang(lang)
-        hits = self.retrieve(question)
-        messages = build_messages(question, lang, hits)
+
+        hits = self.retrieve(
+            question,
+            lang=lang
+        )
+
+        messages = build_messages(
+            question,
+            lang,
+            hits
+        )
+
         raw = self.llm.chat(messages)
+
         answer = scrub(raw)
-        return RAGResult(answer=answer, hits=hits, lang=lang)
+
+        return RAGResult(
+            answer=answer,
+            hits=hits,
+            lang=lang
+        )
+
+    # Streaming generation
+    def stream_generate(
+        self,
+        question: str,
+        lang: str
+    ):
+
+        lang = normalize_lang(lang)
+
+        hits = self.retrieve(
+            question,
+            lang=lang
+        )
+
+        messages = build_messages(
+            question,
+            lang,
+            hits
+        )
+
+        stream = self.llm.stream_chat(messages)
+
+        return stream, hits
