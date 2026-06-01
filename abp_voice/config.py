@@ -34,8 +34,8 @@ class Settings(BaseSettings):
     # ── LLM (Ollama) ──────────────────────────────────────────────────────
     ollama_host: str = "http://localhost:11434"
     llm_model: str = "qwen2.5:1.5b"
-    llm_num_ctx: int = 1024
-    llm_num_predict: int = 80
+    llm_num_ctx: int = 512
+    llm_num_predict: int = 25
     llm_temperature: float = 0.2
     llm_keep_alive: str = "30m"
 

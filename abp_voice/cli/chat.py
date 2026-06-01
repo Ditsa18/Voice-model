@@ -1,14 +1,15 @@
 """Interactive multilingual voice conversation.
 
-  python -m abp_voice chat                  # voice in / voice out
-  python -m abp_voice chat --mode text      # type and read
-  python -m abp_voice chat --seconds 6      # fixed-duration capture
-  python -m abp_voice chat --lang bn        # force Whisper language
-  python -m abp_voice chat --device 5       # pick mic by index
+  python -m abp_voice chat
+  python -m abp_voice chat --mode text
+  python -m abp_voice chat --seconds 6
+  python -m abp_voice chat --lang bn
+  python -m abp_voice chat --device 5
 """
 
 from __future__ import annotations
 
+import time
 import argparse
 import sys
 import traceback
@@ -29,28 +30,38 @@ console = Console()
 def _text_mode(agent: VoiceAgent) -> None:
     console.print(Panel.fit("ABP Voice-RAG (TEXT mode)", style="bold cyan"))
     console.print("Type a question in English / Hindi / Bengali. 'exit' to quit.")
+
     while True:
         try:
             q = console.input("[bold]you[/] > ").strip()
         except (EOFError, KeyboardInterrupt):
             break
+
         if not q or q.lower() in {"exit", "quit"}:
             break
+
         try:
             lang = detect_primary_language(q)
         except Exception:
             lang = "en"
-        conf = script_mix_confidence(q)
-        result, llm_ms = agent.respond(q, lang, lang_confidence=conf)
+
+        start = time.time()
+
+        result = agent.rag.generate(
+            q,
+            lang
+        )
+
+        llm_ms = (time.time() - start) * 1000
+
         console.print(
             f"[bold green]assistant[/] ({LANG_NAMES[lang]}): {result.answer}"
         )
+
         if result.hits:
             console.print(
                 f"[dim]sources: {', '.join(result.sources)}  · llm: {llm_ms/1000:.2f}s[/]"
             )
-
-
 def _voice_mode(
     agent: VoiceAgent, seconds: float | None, force_lang: str | None
 ) -> None:

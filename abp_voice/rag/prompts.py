@@ -11,7 +11,9 @@ _SYSTEM_SINGLE = (
     "{script_hint}\n"
     "Use ONLY the provided context.\n"
     "If the answer is not in the context, say you don't know in {lang_name}.\n"
-    "Keep the answer short and natural.\n"
+    "Answer using the most important facts from the context.\n"
+"Prefer complete factual answers over very short fragments.\n"
+"Keep the answer under 25 words.\n"
     "Output ONLY the final answer."
 )
 
@@ -23,7 +25,9 @@ _SYSTEM_MIXED = (
     "'ABP একটি বড় media group, founded in 1922.'\n"
     "Use ONLY the provided context.\n"
     "If the answer is not in the context, say you don't know.\n"
-    "Keep the answer short and natural.\n"
+    "Answer using the most important facts from the context.\n"
+"Prefer complete factual answers over very short fragments.\n"
+"Keep the answer under 25 words.\n"
     "Output ONLY the final answer."
 )
 

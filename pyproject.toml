@@ -27,6 +27,8 @@ dependencies = [
     "rich>=13.7.0",
     "pydantic>=2.7",
     "pydantic-settings>=2.2",
+    "livekit>=1.1.8",
+    "livekit-agents>=1.5.15",
 ]
 
 [project.optional-dependencies]
