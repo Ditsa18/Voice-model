@@ -43,10 +43,13 @@ class Transcriber:
                 device=s.whisper_device,
                 compute_type=s.whisper_compute,
             )
-        except Exception as e:
+        except Exception as gpu_err:
             log.warning("whisper load on %s failed (%s); falling back to CPU/int8",
-                        s.whisper_device, e)
-            self._model = WhisperModel(s.whisper_model, device="cpu", compute_type="int8")
+                        s.whisper_device, gpu_err)
+            try:
+                self._model = WhisperModel(s.whisper_model, device="cpu", compute_type="int8")
+            except Exception as cpu_err:
+                raise RuntimeError("whisper failed to load on both GPU and CPU") from cpu_err
         return self._model
 
     def warmup(self) -> None:
@@ -64,11 +67,16 @@ class Transcriber:
             audio,
             beam_size=5,
             vad_filter=s.whisper_use_vad,
+            vad_parameters={
+                "threshold": s.whisper_vad_threshold,
+                "min_speech_duration_ms": s.whisper_vad_min_speech_ms,
+                "min_silence_duration_ms": s.whisper_vad_min_silence_ms,
+            },
             language=force_lang,
             task="transcribe",
             temperature=[0.0, 0.2, 0.4, 0.6],
             condition_on_previous_text=False,
-            no_speech_threshold=0.5,
+            no_speech_threshold=s.whisper_no_speech_threshold,
         )
         seg_list = list(segments)
         text = " ".join(seg.text.strip() for seg in seg_list).strip()

@@ -20,9 +20,9 @@ _BAR_WIDTH = 30
 _BAR_PEAK = 0.2
 
 
-def _bar(level: float) -> str:
-    n = int(min(1.0, level / _BAR_PEAK) * _BAR_WIDTH)
-    return "█" * n + "·" * (_BAR_WIDTH - n)
+def _bar(level: float, width: int = _BAR_WIDTH) -> str:
+    n = int(min(1.0, level / _BAR_PEAK) * width)
+    return "█" * n + "·" * (width - n)
 
 
 @dataclass(slots=True)

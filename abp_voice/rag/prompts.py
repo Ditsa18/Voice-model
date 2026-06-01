@@ -5,13 +5,24 @@ from __future__ import annotations
 from ..languages import LANG_NAMES, SCRIPT_HINT, normalize_lang
 from .store import Retrieved
 
-SYSTEM_TEMPLATE = (
+_SYSTEM_SINGLE = (
     "You are a concise multilingual voice assistant.\n"
-    "ALWAYS answer in {lang_name}.\n"
-    "NEVER answer in English unless the user used English.\n"
+    "The user spoke in {lang_name}. Respond in {lang_name}.\n"
     "{script_hint}\n"
     "Use ONLY the provided context.\n"
     "If the answer is not in the context, say you don't know in {lang_name}.\n"
+    "Keep the answer short and natural.\n"
+    "Output ONLY the final answer."
+)
+
+_SYSTEM_MIXED = (
+    "You are a concise multilingual voice assistant.\n"
+    "The user mixed languages (primarily {lang_name}).\n"
+    "Reply in the same code-switched style — blend {lang_name} with English naturally.\n"
+    "Example: if asked 'ABP কী? Tell me about it.' reply like "
+    "'ABP একটি বড় media group, founded in 1922.'\n"
+    "Use ONLY the provided context.\n"
+    "If the answer is not in the context, say you don't know.\n"
     "Keep the answer short and natural.\n"
     "Output ONLY the final answer."
 )
@@ -24,12 +35,21 @@ _LEAK_PREFIXES = (
 )
 
 
+_MIXED_THRESHOLD = 0.70
+
+
 def build_messages(
-    question: str, lang: str, hits: list[Retrieved]
+    question: str,
+    lang: str,
+    hits: list[Retrieved],
+    lang_confidence: float = 1.0,
 ) -> list[dict[str, str]]:
     lang = normalize_lang(lang)
     lang_name = LANG_NAMES[lang]
     script_hint = SCRIPT_HINT[lang]
+
+    is_mixed = lang_confidence < _MIXED_THRESHOLD
+    template = _SYSTEM_MIXED if is_mixed else _SYSTEM_SINGLE
 
     context_blocks = [f"[{i}] {h.text}" for i, h in enumerate(hits, 1)]
     context = "\n\n".join(context_blocks) if context_blocks else "(no relevant context found)"
@@ -37,9 +57,7 @@ def build_messages(
     return [
         {
             "role": "system",
-            "content": SYSTEM_TEMPLATE.format(
-                lang_name=lang_name, script_hint=script_hint
-            ),
+            "content": template.format(lang_name=lang_name, script_hint=script_hint),
         },
         {
             "role": "user",

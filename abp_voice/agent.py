@@ -61,9 +61,11 @@ class VoiceAgent:
         elapsed = (perf_counter() - t0) * 1000
         return result.text, result.language, result.language_probability, elapsed
 
-    def respond(self, question: str, lang: str) -> tuple[RAGResult, float]:
+    def respond(
+        self, question: str, lang: str, lang_confidence: float = 1.0
+    ) -> tuple[RAGResult, float]:
         t0 = perf_counter()
-        result = self.rag.generate(question, normalize_lang(lang))
+        result = self.rag.generate(question, normalize_lang(lang), lang_confidence)
         return result, (perf_counter() - t0) * 1000
 
     def speak(self, text: str, lang: str) -> None:
@@ -79,7 +81,7 @@ class VoiceAgent:
         text, lang, conf, stt_ms = self.listen(seconds=seconds, force_lang=force_lang)
         if not text:
             return None
-        rag_result, llm_ms = self.respond(text, lang)
+        rag_result, llm_ms = self.respond(text, lang, lang_confidence=conf)
         if do_speak and rag_result.answer:
             self.speak(rag_result.answer, lang)
         return TurnResult(

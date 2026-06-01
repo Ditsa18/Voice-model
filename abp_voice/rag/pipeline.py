@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from dataclasses import dataclass
 
 from ..config import get_settings
@@ -57,36 +58,29 @@ class RAGPipeline:
     def retrieve(
         self,
         query: str,
-        lang: str,
-        k: int | None = None
+        lang: str | None = None,
+        k: int | None = None,
     ) -> list[Retrieved]:
-
         vec = self.embeddings.encode([query])[0]
-
-        return self.store.query(
-            vec,
-            k or self._top_k,
-            lang=lang
-        )
+        return self.store.query(vec, k or self._top_k, lang=lang)
 
     # Full generation
     def generate(
         self,
         question: str,
-        lang: str
+        lang: str,
+        lang_confidence: float = 1.0,
     ) -> RAGResult:
 
         lang = normalize_lang(lang)
 
-        hits = self.retrieve(
-            question,
-            lang=lang
-        )
+        hits = self.retrieve(question, lang=lang)
 
         messages = build_messages(
             question,
             lang,
-            hits
+            hits,
+            lang_confidence=lang_confidence,
         )
 
         raw = self.llm.chat(messages)
@@ -103,22 +97,13 @@ class RAGPipeline:
     def stream_generate(
         self,
         question: str,
-        lang: str
-    ):
+        lang: str,
+    ) -> tuple[Iterator[str], list[Retrieved]]:
 
         lang = normalize_lang(lang)
 
-        hits = self.retrieve(
-            question,
-            lang=lang
-        )
+        hits = self.retrieve(question, lang=lang)
 
-        messages = build_messages(
-            question,
-            lang,
-            hits
-        )
+        messages = build_messages(question, lang, hits)
 
-        stream = self.llm.stream_chat(messages)
-
-        return stream, hits
+        return self.llm.stream_chat(messages), hits

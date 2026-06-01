@@ -32,12 +32,16 @@ class Synthesizer:
         voice = EDGE_VOICES[lang]
         out = self._tmp_mp3()
         try:
-            asyncio.run(self._edge_speak(text, voice, out))
-            if not out.exists() or out.stat().st_size == 0:
-                raise RuntimeError("edge-tts produced empty output")
-        except Exception as e:
-            log.warning("edge-tts failed (%s); falling back to gTTS", e)
-            self._gtts_speak(text, lang, out)
+            try:
+                asyncio.run(self._edge_speak(text, voice, out))
+                if not out.exists() or out.stat().st_size == 0:
+                    raise RuntimeError("edge-tts produced empty output")
+            except Exception as e:
+                log.warning("edge-tts failed (%s); falling back to gTTS", e)
+                self._gtts_speak(text, lang, out)
+        except Exception:
+            out.unlink(missing_ok=True)
+            raise
         return out
 
     def speak(self, text: str, lang: str) -> None:

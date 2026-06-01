@@ -13,13 +13,9 @@ import time
 import numpy as np
 import sounddevice as sd
 
+from ..audio.recorder import _bar
+
 _VU_WIDTH = 40
-_VU_PEAK = 0.2
-
-
-def _bar(level: float) -> str:
-    n = int(min(1.0, level / _VU_PEAK) * _VU_WIDTH)
-    return "█" * n + "·" * (_VU_WIDTH - n)
 
 
 def _list_devices() -> None:
@@ -54,7 +50,7 @@ def _vu(device: int, seconds: int) -> None:
             print(status, file=sys.stderr)
         rms = float(np.sqrt(np.mean(indata.astype(np.float32) ** 2)))
         peak_seen = max(peak_seen, rms)
-        sys.stdout.write(f"\rrms={rms:.4f}  peak={peak_seen:.4f}  {_bar(rms)}")
+        sys.stdout.write(f"\rrms={rms:.4f}  peak={peak_seen:.4f}  {_bar(rms, width=_VU_WIDTH)}")
         sys.stdout.flush()
 
     try:

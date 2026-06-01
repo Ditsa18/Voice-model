@@ -46,5 +46,8 @@ def play_audio_file(path: Path) -> None:
             data, sr = sf.read(str(wav_path), dtype="float32")
         finally:
             wav_path.unlink(missing_ok=True)
+        sd.play(data, sr)
+        sd.wait()
+        return
     sd.play(data, sr)
     sd.wait()

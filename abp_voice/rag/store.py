@@ -40,6 +40,7 @@ class VectorStore:
 
         self._collection: Collection | None = None
 
+    @property
     def _coll(self) -> Collection:
 
         if self._collection is None:
@@ -51,7 +52,7 @@ class VectorStore:
         return self._collection
 
     def count(self) -> int:
-        return self._coll().count()
+        return self._coll.count()
 
     def reset(self) -> None:
 
@@ -65,7 +66,7 @@ class VectorStore:
 
         self._collection = None
 
-        self._coll()
+        _ = self._coll  # ensure collection is re-created
 
     def upsert(
         self,
@@ -75,7 +76,7 @@ class VectorStore:
         embeddings: list[list[float]],
     ) -> None:
 
-        self._coll().upsert(
+        self._coll.upsert(
             ids=ids,
             documents=documents,
             metadatas=metadatas,
@@ -96,7 +97,7 @@ class VectorStore:
                 "lang": lang
             }
 
-        res = self._coll().query(
+        res = self._coll.query(
             query_embeddings=[query_embedding],
             n_results=k,
             where=where,

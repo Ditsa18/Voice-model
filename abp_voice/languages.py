@@ -50,6 +50,36 @@ def normalize_lang(code: str | None) -> str:
     return "en"
 
 
+def detect_primary_language(text: str) -> str:
+    """Detect primary language from Unicode script and explicit keywords.
+
+    Prefers script ranges (unambiguous) over library heuristics.
+    Falls back to English for Latin-only or unknown input.
+    """
+    lower = text.lower()
+
+    if "in bengali" in lower or "বাংলায়" in lower:
+        return "bn"
+    if "in hindi" in lower or "हिंदी" in lower:
+        return "hi"
+
+    if any("ঀ" <= c <= "৿" for c in text):
+        return "bn"
+    if any("ऀ" <= c <= "ॿ" for c in text):
+        return "hi"
+
+    return "en"
+
+
+def script_mix_confidence(text: str) -> float:
+    """Return <1.0 when the text mixes multiple scripts (code-switching detected)."""
+    has_latin = any("a" <= c.lower() <= "z" for c in text)
+    has_devanagari = any("ऀ" <= c <= "ॿ" for c in text)
+    has_bengali = any("ঀ" <= c <= "৿" for c in text)
+    scripts_used = sum([has_latin, has_devanagari, has_bengali])
+    return 0.5 if scripts_used > 1 else 1.0
+
+
 def is_exit_phrase(text: str) -> bool:
     t = (text or "").strip().lower()
     if not t:

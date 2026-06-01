@@ -52,14 +52,18 @@ class Settings(BaseSettings):
     whisper_model: str = "small"
     whisper_device: str = "cpu"
     whisper_compute: str = "int8"
-    whisper_use_vad: bool = False
+    whisper_use_vad: bool = True
+    whisper_no_speech_threshold: float = 0.65
+    whisper_vad_threshold: float = 0.6
+    whisper_vad_min_speech_ms: int = 250
+    whisper_vad_min_silence_ms: int = 400
 
     # ── Audio I/O ─────────────────────────────────────────────────────────
     sample_rate: int = 16000
     silence_duration: float = 1.2
-    noise_calibration_seconds: float = 0.6
-    noise_multiplier: float = 3.0
-    min_speech_threshold: float = 0.003
+    noise_calibration_seconds: float = 1.5
+    noise_multiplier: float = 4.5
+    min_speech_threshold: float = 0.005
 
     # ── Misc ──────────────────────────────────────────────────────────────
     hf_token: str | None = Field(default=None, alias="HF_TOKEN")

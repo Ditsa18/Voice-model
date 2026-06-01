@@ -18,8 +18,10 @@ from rich.console import Console
 from rich.panel import Panel
 
 from ..agent import VoiceAgent
-from ..languages import GREETING, LANG_NAMES, SUPPORTED_LANGS, is_exit_phrase
-from ..rag import RAGPipeline
+from ..languages import (
+    GREETING, LANG_NAMES, SUPPORTED_LANGS,
+    detect_primary_language, is_exit_phrase, script_mix_confidence,
+)
 
 console = Console()
 
@@ -35,12 +37,11 @@ def _text_mode(agent: VoiceAgent) -> None:
         if not q or q.lower() in {"exit", "quit"}:
             break
         try:
-            from langdetect import detect
-
-            lang = detect(q) if detect(q) in SUPPORTED_LANGS else "en"
+            lang = detect_primary_language(q)
         except Exception:
             lang = "en"
-        result, llm_ms = agent.respond(q, lang)
+        conf = script_mix_confidence(q)
+        result, llm_ms = agent.respond(q, lang, lang_confidence=conf)
         console.print(
             f"[bold green]assistant[/] ({LANG_NAMES[lang]}): {result.answer}"
         )
@@ -126,7 +127,7 @@ def main() -> int:
     console.print("[dim]warming up models (embedding + LLM + whisper)...[/]")
     agent.warmup(include_stt=(args.mode == "voice"))
 
-    count = RAGPipeline(store=agent.rag.store).store.count()
+    count = agent.rag.store.count()
     if count == 0:
         console.print(
             "[yellow]Warning: knowledge base is empty. Run `python -m abp_voice ingest` "

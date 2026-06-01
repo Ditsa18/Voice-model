@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
+
 import ollama
 
 from ..config import get_settings
@@ -80,8 +82,8 @@ class OllamaLLM:
     # Real streaming
     def stream_chat(
         self,
-        messages: list[dict[str, str]]
-    ):
+        messages: list[dict[str, str]],
+    ) -> Iterator[str]:
 
         stream = self._client.chat(
             model=self._model,
